@@ -3,10 +3,14 @@ services:
     name: flight-booking-api
     env: python
     plan: free
-    buildCommand: pip install -r requirements.txt
-    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
     region: oregon
+    buildCommand: pip install -r requirements.txt
+    # If your ASGI app is in main.py at repo root, use "main:app"
+    # If it's in app/main.py, keep "app.main:app"
+    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
     envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.10
       - key: DATABASE_URL
         scope: build
       - key: AMADEUS_CLIENT_ID
