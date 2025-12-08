@@ -1,5 +1,7 @@
 import asyncio
 from fastapi import FastAPI, HTTPException, Query, Depends, status
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
 from pydantic import BaseModel, EmailStr
 from typing import Optional, List
 from fastapi.middleware.cors import CORSMiddleware
@@ -1297,3 +1299,14 @@ def get_statistics():
         "confirmed_bookings": confirmed_bookings,
         "total_revenue": f"${total_revenue:.2f}"
     }
+
+
+# Mount frontend static files
+import os
+frontend_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "frontend")
+if os.path.exists(frontend_path):
+    app.mount("/static", StaticFiles(directory=frontend_path), name="static")
+
+    @app.get("/")
+    def read_index():
+        return FileResponse(os.path.join(frontend_path, "index.html"))
