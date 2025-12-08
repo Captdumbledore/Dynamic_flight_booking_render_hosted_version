@@ -286,7 +286,7 @@ async def startup_event():
             print(f"🛫 Routes: {len(routes)}")
             print(f"✈️  Airlines: {len(airlines)}")
         print("="*60)
-        print("\n📚 API Documentation: http://localhost:8001/docs\n")
+        print("\n📚 API Documentation: Check /docs endpoint on your deployment\n")
 
 async def get_amadeus_token():
     """Get access token from Amadeus API"""

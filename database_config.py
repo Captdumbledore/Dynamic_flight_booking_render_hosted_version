@@ -154,7 +154,7 @@ async def startup_event():
     print("\n" + "="*60)
     print("✨ Server is ready!")
     print("="*60)
-    print("\n📚 API Docs: http://localhost:8001/docs")
+    print("\n📚 API Docs: Check /docs endpoint on your deployment")
     print("🗄️ Database: PostgreSQL connected")
     print("🌐 CORS: Enabled for frontend\n")
 
