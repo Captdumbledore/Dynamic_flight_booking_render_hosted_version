@@ -1303,10 +1303,22 @@ def get_statistics():
 
 # Mount frontend static files
 import os
-frontend_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "frontend")
-if os.path.exists(frontend_path):
-    app.mount("/static", StaticFiles(directory=frontend_path), name="static")
+frontend_dir = os.path.join(os.path.dirname(__file__), "..", "frontend")
 
+# Mount static files (CSS, JS, images if any)
+if os.path.exists(frontend_dir):
+    app.mount("/frontend", StaticFiles(directory=frontend_dir), name="frontend")
+
+    # Serve index.html for root URL
     @app.get("/")
-    def read_index():
-        return FileResponse(os.path.join(frontend_path, "index.html"))
+    async def serve_index():
+        index_path = os.path.join(frontend_dir, "index.html")
+        return FileResponse(index_path)
+
+    # Optional: catch-all route so that /login.html or /register.html also work
+    @app.get("/{file_path:path}")
+    async def serve_html(file_path: str):
+        file_to_serve = os.path.join(frontend_dir, file_path)
+        if os.path.exists(file_to_serve):
+            return FileResponse(file_to_serve)
+        return FileResponse(os.path.join(frontend_dir, "index.html"))
