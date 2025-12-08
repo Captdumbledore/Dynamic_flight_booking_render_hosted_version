@@ -985,9 +985,9 @@ async def register(user_data: UserRegister, db: Session = Depends(get_db)):
             detail="Internal server error during registration"
         )
 
-@app.get("/")
-def root():
-    """API root"""
+@app.get("/status")
+def status():
+    """API status and health check"""
     return {
         "message": "Flight Booking API",
         "version": "1.0.0",
@@ -1301,24 +1301,24 @@ def get_statistics():
     }
 
 
-# Mount frontend static files
+# Frontend serving
 import os
-frontend_dir = os.path.join(os.path.dirname(__file__), "..", "frontend")
+from pathlib import Path
 
-# Mount static files (CSS, JS, images if any)
-if os.path.exists(frontend_dir):
-    app.mount("/frontend", StaticFiles(directory=frontend_dir), name="frontend")
+FRONTEND_DIR = os.path.join(os.path.dirname(__file__), "..", "frontend")
 
-    # Serve index.html for root URL
-    @app.get("/")
-    async def serve_index():
-        index_path = os.path.join(frontend_dir, "index.html")
-        return FileResponse(index_path)
+# 1) Serve index.html at /
+@app.get("/")
+def serve_index():
+    """Serve the frontend index.html"""
+    return FileResponse(os.path.join(FRONTEND_DIR, "index.html"))
 
-    # Optional: catch-all route so that /login.html or /register.html also work
-    @app.get("/{file_path:path}")
-    async def serve_html(file_path: str):
-        file_to_serve = os.path.join(frontend_dir, file_path)
-        if os.path.exists(file_to_serve):
-            return FileResponse(file_to_serve)
-        return FileResponse(os.path.join(frontend_dir, "index.html"))
+# 2) Serve login.html, register.html, and other frontend files
+@app.get("/{path:path}")
+def serve_any(path: str):
+    """Serve frontend files or fallback to index.html for SPA routing"""
+    file_path = os.path.join(FRONTEND_DIR, path)
+    if os.path.isfile(file_path):
+        return FileResponse(file_path)
+    # Fallback to index.html for SPA routing
+    return FileResponse(os.path.join(FRONTEND_DIR, "index.html"))
