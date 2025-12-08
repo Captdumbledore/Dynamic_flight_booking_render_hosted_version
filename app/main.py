@@ -14,6 +14,7 @@ import socket
 
 from app.auth import get_password_hash, verify_password, create_access_token, get_current_user
 from app.user_database import get_db, User
+from app.models.search import FlightSearchRequest
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from email.mime.application import MIMEApplication
@@ -1037,6 +1038,31 @@ def get_all_flights(
         result.sort(key=lambda x: int(x["duration"].split('h')[0]) * 60 + 
                     int(x["duration"].split('h')[1].split('m')[0]))
     return result[:limit]
+
+@app.post("/flights/search")
+def search_flights(params: FlightSearchRequest):
+    """Search flights by origin, destination, date and sort"""
+    # Filter by origin, destination and date (YYYY-MM-DD) against departure_time
+    results = [
+        f for f in flights_data
+        if f["origin"].upper() == params.origin.upper()
+        and f["destination"].upper() == params.destination.upper()
+        and str(f["departure_time"]).startswith(params.date)
+    ]
+
+    # Sort by specified criteria
+    if params.sort_by and str(params.sort_by).lower() == "duration":
+        def parse_duration(d):
+            # "2h 30m" -> 150 minutes
+            h = int(d.replace('h', '').split()[0])
+            m = int(d.split()[-1].replace('m', ''))
+            return h * 60 + m
+        results.sort(key=lambda x: parse_duration(x["duration"]))
+    else:
+        # Default sort by price
+        results.sort(key=lambda x: x["current_price"])
+
+    return results
 
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
